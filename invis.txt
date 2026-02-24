@@ -1,0 +1,686 @@
+// ==UserScript==
+// @name         Invis Texturepack
+// @namespace    http://tampermonkey.net/
+// @version      48
+// @description  Redirects specific image loads no matter how they are set, with detailed logging
+// @match        *://sploop.io/*
+// @run-at       document-idle
+// ==/UserScript==
+
+(function() {
+    'use strict';
+    // Note: All items which are commented out are replaced by another, search before reenabling them to avoid any trouble.
+    const redirects = new Map([
+        ["cursor-text.png", "https://i.ibb.co/mC0qgR6/cursor-text.png"],
+        ["cursor-pointer.png", "https://i.ibb.co/8XJKpt4/cursor-pointer.png"],
+        ["cursor-default.png", "https://i.ibb.co/M5p8yJc/cursor-default.png"],
+        // Invis Body
+        ["body1.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body0.png"],
+        ["body2.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body0.png"],
+        ["body3.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body0.png"],
+        ["body4.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body0.png"],
+        ["body5.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body0.png"],
+        ["body6.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body7.png"],
+        ["body7.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body7.png"],
+        ["body8.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body8.png"],
+        ["body9.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body9.png"],
+        ["body10.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body10.png"],
+        ["body11.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body11.png"],
+        ["body12.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body12.png"],
+        ["body13.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body13.png"],
+        ["body14.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body14.png"],
+        ["body15.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body15.png"],
+        ["body16.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body16.png"],
+        ["body17.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body17.png"],
+        ["body18.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body38.png"],
+        ["body19.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body26.png"],
+        ["body20.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body20.png"],
+        ["body21.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body21.png"],
+        ["body22.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body22.png"],
+        ["body23.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body23.png"],
+        ["body24.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body24.png"],
+        ["body25.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body25.png"],
+        ["body26.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body26.png"],
+        ["body27.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body27.png"],
+        ["body28.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body29.png"],
+        ["body29.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body29.png"],
+        ["body30.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body30.png"],
+        ["body31.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body0.png"],
+        ["body32.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body32.png"],
+        ["body33.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body35.png"],
+        ["body34.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body35.png"],
+        ["body35.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body35.png"],
+        ["body36.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body36.png"],
+        ["body37.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body37.png"],
+        ["body38.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body38.png"],
+        ["body39.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body39.png"],
+        ["body40.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body40.png"],
+        ["body41.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body41.png"],
+        ["body42.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body42.png"],
+        ["body43.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body43.png"],
+        ["body44.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body44.png"],
+        ["body45.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body45.png"],
+        ["body46.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body47.png"],
+        ["body47.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body47.png"],
+        ["body48.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body47.png"],
+        ["body49.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body49.png"],
+        ["body50.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body50.png"],
+        ["body51.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body51.png"],
+        ["body52.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body52.png"],
+        ["body53.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body53.png"],
+        ["body54.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body54.png"],
+        ["body55.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body55.png"],
+        ["body56.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body56.png"],
+        ["body57.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body57.png"],
+        ["body58.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body57.png"],
+        ["body59.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body57.png"],
+        ["body60.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body57.png"],
+        ["body61.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body57.png"],
+        ["body62.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body57.png"],
+        ["body63.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body57.png"],
+        ["body64.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body64.png"],
+        ["body65.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body64.png"],
+        ["body66.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body64.png"],
+        ["body67.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body67.png"],
+        ["body68.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body68.png"],
+        ["body69.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body69.png"],
+        ["body70.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body70.png"],
+        ["body71.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body71.png"],
+        ["body72.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body72.png"],
+        ["body73.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body73.png"],
+        ["body74.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body74.png"],
+        ["body75.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body75.png"],
+        ["body76.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body76.png"],
+        ["body77.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body77.png"],
+        ["body78.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body78.png"],
+        ["body79.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body79.png"],
+        ["body80.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body80.png"],
+        ["body81.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body81.png"],
+        ["body82.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body81.png"],
+        ["body83.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body81.png"],
+        ["body84.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body84.png"],
+        ["body85.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body85.png"],
+        ["body86.png", "https://file.garden/ZtXp4RfU3xpOoqm9/body86-1.png"],
+        ["body87.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body87.png"],
+        ["body88.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body88.png"],
+        ["body89.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body89.png"],
+        ["body0.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body0.png"],
+        ["body90.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body90.png"],
+        ["body91.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body91.png"],
+        ["body92.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body92.png"],
+        ["body93.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body92.png"],
+        ["body94.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body92.png"],
+        ["body95.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Body/body95.png"],
+        ["body96.png", "https://file.garden/ZtXp4RfU3xpOoqm9/new/body96.png"],
+        ["body97.png", "https://file.garden/ZtXp4RfU3xpOoqm9/new/body97.png"],
+        ["body98.png", "https://file.garden/ZtXp4RfU3xpOoqm9/new/body98.png"],
+        ["body99.png", "https://file.garden/ZtXp4RfU3xpOoqm9/new/body99.png"],
+        ["body100.png", "https://file.garden/ZtXp4RfU3xpOoqm9/new/body100.png"],
+        // Invis Arms
+        ["arm2.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm3.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm4.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm5.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm6.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm7.png"],
+        ["arm7.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm7.png"],
+        ["arm8.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm7.png"],
+        ["arm9.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm9.png"],
+        ["arm10.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm11.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm7.png"],
+        ["arm12.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm13.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm14.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm15.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm16.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm17.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm17.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm18.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm19.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm20.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm21.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm22.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm23.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm24.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm25.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm26.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm27.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm27.png"],
+        ["arm28.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm29.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm30.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm30.png"],
+        ["arm31.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm31.png"],
+        ["arm32.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm33.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm34.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm35.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm36.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm37.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm37.png"],
+        ["arm38.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm39.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm40.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm41.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm42.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm43.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm44.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm45.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm46.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm47.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm48.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm49.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm50.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm51.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm52.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm53.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm54.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm55.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm56.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm57.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm58.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm59.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm60.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm61.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm62.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm63.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm64.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm65.png"],
+        ["arm65.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm65.png"],
+        ["arm66.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm65.png"],
+        ["arm67.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm68.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm69.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm69.png"],
+        ["arm70.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm71.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm71.png"],
+        ["arm72.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm73.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm74.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm75.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm76.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm77.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm77.png"],
+        ["arm78.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm79.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm80.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm81.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm82.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm83.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm84.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm84.png"],
+        ["arm85.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm86.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm87.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm88.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm89.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm0.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm1.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm90.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm91.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm92.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm93.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm94.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm95.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm96.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm97.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm98.png", "https://file.garden/ZtXp4RfU3xpOoqm9/new/body98.png"],
+        ["arm99.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        ["arm100.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Arm/arm0.png"],
+        // Invis Accessories
+        ["accessory1.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory1.png"],
+        ["accessory2.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory2.png"],
+        ["accessory3.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory3.png"],
+        ["accessory4.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory3.png"],
+        ["accessory5.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory3.png"],
+        ["accessory6.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory3.png"],
+        ["accessory7.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory7.png"],
+        ["accessory8.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory8.png"],
+        ["accessory9.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory9.png"],
+        ["accessory10.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory10.png"],
+        ["accessory11.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory11.png"],
+        ["accessory12.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory12.png"],
+        ["accessory13.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory13.png"],
+        ["accessory14.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory14.png"],
+        ["accessory15.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory15.png"],
+        ["accessory16.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory16.png"],
+        ["accessory17.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory17.png"],
+        ["accessory18.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory18.png"],
+        ["accessory19.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory19.png"],
+        ["accessory20.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory20.png"],
+        ["accessory21.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory21.png"],
+        ["accessory22.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory22.png"],
+        ["accessory23.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory22.png"],
+        ["accessory24.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory22.png"],
+        ["accessory25.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory22.png"],
+        ["accessory26.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory26.png"],
+        ["accessory27.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory26.png"],
+        ["accessory28.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory26.png"],
+        ["accessory29.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory29.png"],
+        ["accessory30.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory30.png"],
+        ["accessory31.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory31.png"],
+        ["accessory32.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory32.png"],
+        ["accessory33.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory33.png"],
+        ["accessory34.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory34.png"],
+        ["accessory35.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory35.png"],
+        ["accessory36.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory36.png"],
+        ["accessory37.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory37.png"],
+        ["accessory38.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory38.png"],
+        ["accessory39.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory39.png"],
+        ["accessory40.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory40.png"],
+        ["accessory41.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory41.png"],
+        ["accessory42.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory42.png"],
+        ["accessory43.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory42.png"],
+        ["accessory44.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory44.png"],
+        ["accessory45.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory44.png"],
+        ["accessory47.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory47.png"],
+        ["accessory48.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory48.png"],
+        ["accessory49.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory49.png"],
+        ["accessory50.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory50.png"],
+        ["accessory51.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory51.png"],
+        ["accessory52.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory52.png"],
+        ["accessory53.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory53.png"],
+        ["accessory54.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory54.png"],
+        ["accessory55.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory54.png"],
+        ["accessory56.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory54.png"],
+        ["accessory57.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory54.png"],
+        ["accessory58.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory58.png"],
+        ["accessory59.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory59.png"],
+        ["accessory60.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory60.png"],
+        ["accessory61.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory61.png"],
+        ["accessory62.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory62.png"],
+        ["accessory63.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Acc/accessory63.png"],
+        // Invis Cape
+        ["back1.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back1.png"],
+        ["back2.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back2.png"],
+        ["back3.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back3.png"],
+        ["back4.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back4.png"],
+        ["back5.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back5.png"],
+        ["back6.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back6.png"],
+        ["back7.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back7.png"],
+        ["back8.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back8.png"],
+        ["back9.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back9.png"],
+        ["back10.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back10.png"],
+        ["back11.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back11.png"],
+        ["back12.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back12.png"],
+        ["back13.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back13.png"],
+        ["back14.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back14.png"],
+        ["back15.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back15.png"],
+        ["back16.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back16.png"],
+        ["back17.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back17.png"],
+        ["back18.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back18.png"],
+        ["back19.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back19.png"],
+        ["back20.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back20.png"],
+        ["back21.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back21.png"],
+        ["back22.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back22.png"],
+        ["back23.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back23.png"],
+        ["back24.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back24.png"],
+        ["back25.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back25.png"],
+        ["back26.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back26.png"],
+        ["back27.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back27.png"],
+        ["back28.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back28.png"],
+        ["back29.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back29.png"],
+        ["back30.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back30.png"],
+        ["back31.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back31.png"],
+        ["back32.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back32.png"],
+        ["back33.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back33.png"],
+        ["back34.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back34.png"],
+        ["back35.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back35.png"],
+        ["back36.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back36.png"],
+        ["back37.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back37.png"],
+        ["back38.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back38.png"],
+        ["back39.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back39.png"],
+        ["back40.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back40.png"],
+        ["back41.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back41.png"],
+        ["back42.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back42.png"],
+        ["back43.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back42.png"],
+        ["back44.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back42.png"],
+        ["back45.png", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Back/back42.png"],
+        // Invis Nature
+        ["rock.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/rock.png"],
+        ["tree.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/tree.png"],
+        ["cherry_tree.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/cherry_tree.png"],
+        ["bush.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/bush.png"],
+        ["berry_farm.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/berry_farm_MConverter.eu.png"],
+        ["gold.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/gold.png"],
+        ["ice1.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/ice1.png"],
+        ["ice0.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/ice0.png"],
+        ["ruby.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/ruby.png"],
+        //  ["cactus.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/cactus.png"],
+        ["cave_stone0.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/cave_stone0.png"],
+        ["cave_stone1.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/cave_stone1.png"],
+        ["cave_stone2.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/cave_stone2.png"],
+        ["palm_tree.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/palm_tree.png"],
+        ["wood_farm.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/wood_farm.png"],
+        ["wood_farm_cherry.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/wood_farm_cherry.png"],
+        ["stone_farm.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/stone_farm.png"],
+        ["tornado.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/tornado.png"],
+        ["wood_farm_cherry.png?v=1923912", "https://i.ibb.co/tKFXpGZ/wood-farm-cherry.png"],
+        ["stone_farm.png?v=1923912", "https://i.ibb.co/Kzz62Ry/stone-farm.png"],
+        ["wood_farm.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/wood_farm.png"],
+        // Invis Weapons
+        ["stone_toolhammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/stone_toolhammer.png"],
+        ["g_toolhammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g_toolhammer.png"],
+        ["d_toolhammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d_toolhammer_MConverter.eu.png"],
+        ["r_toolhammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/r_toolhammer.png"],
+        ["stone_sword.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/stone_sword.png"],
+        ["g_sword.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g_sword.png"],
+        ["d_sword.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d_sword.png"],
+        ["r_sword.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/r_sword.png"],
+        ["katana.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/katana.png"],
+        ["g_katana.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g_katana_MConverter.eu.png"],
+        ["d_katana.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d_katana.png"],
+        ["c_katana.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/c_katana.png"],
+        ["stone_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/stone_axe_MConverter.eu.png"],
+        ["g_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g_axe_MConverter.eu.png"],
+        ["d_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d_axe.png"],
+        ["great_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/great_axe.png"],
+        ["g_great_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g_great_axe_MConverter.eu.png"],
+        ["stone_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/stone_spear.png"],
+        ["g_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g_spear.png"],
+        ["d_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d_spear_MConverter.eu.png"],
+        ["r_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/r_spear.png"],
+        ["cut_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/cut_spear.png"],
+        ["g_cutspear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g_cutspear_MConverter.eu.png"],
+        ["d_cutspear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d_cutspear.png"],
+        ["r_cutspear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/r_cutspear.png"],
+        ["stick.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/stick.png"],
+        ["g_stick.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g_stick.png"],
+        ["d_stick.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d_stick_MConverter.eu.png"],
+        ["r_stick.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/r_stick_MConverter.eu.png"],
+        ["bat.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/bat.png"],
+        ["s_dagger.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/s_dagger.png"],
+        ["g_dagger.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g-dagger.png"],
+        ["d_dagger.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d-dagger.png"],
+        ["r_dagger.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/r_dagger.png"],
+        ["hammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/hammer.png"],
+        ["shield.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/shield.png"],
+        ["bow.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/bow.png"],
+        ["Xbow.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/Xbow.png"],
+        ["s_musket.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/s_musket.png"],
+        ["arrow.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/arrow.png"],
+        ["bullet.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/bullet.png"],
+        ["meme.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/meme.png"],
+        ["scythe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/scythe.png"],
+        ["pearl.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/pearl.png"],
+        ["d_great_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d_great_axe.png"],
+        ["r_great_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/r_great_axe.png"],
+        ["s_healing_staff.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/s-healing-staff.png"],
+        ["g_healing_staff.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/g-healing-staff.png"],
+        ["d_healing_staff.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/d-healing-staff.png"],
+        ["r_healing_staff.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Weapon/r-healing-staff.png"],
+        ["g_bat.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/g_bat.png"],
+        ["d_bat.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/d_bat.png"],
+        ["r_bat.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/r_bat.png"],
+        ["g_hammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/g_hammer.png"],
+        ["d_hammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/d_hammer.png"],
+        ["r_hammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/r_hammer.png"],
+        // Invis Animal Textures
+        ["mammoth_tail.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/mammoth_tail.png"],
+        ["mammoth_head_angry.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/mammoth_head_angry.png"],
+        ["mammoth_head.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/mammoth_head.png"],
+        ["mammoth_body.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/mammoth_body.png"],
+        ["fireball.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/fireball.png"],
+        ["dragon_2_right_wing.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/dragon_2_right_wing.png"],
+        ["dragon_2_left_wing.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/dragon_2_left_wing.png"],
+        ["dragon_2_head.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/dragon_2_head.png"],
+        ["dragon_2_body.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/dragon_2_body.png"],
+        ["shark.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/shark.png"],
+        ["gcow.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/gcow.png"],
+        ["duck.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/duck.png"],
+        ["cow.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/cow.png"],
+        ["wolf.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/wolf.png"],
+        ["crocodile.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/crocodile.png"],
+        // Invis BG Textures
+        ["inv_stone_toolhammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_stone_toolhammer.png"],
+        ["inv_g_toolhammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_g_toolhammer.png"],
+        ["inv_d_toolhammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_d_toolhammer.png"],
+        ["inv_r_toolhammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_r_toolhammer.png"],
+        ["inv_apple.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_apple.png"],
+        ["inv_wood_wall.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_wood_wall.png"],
+        ["inv_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_spike.png"],
+        ["inv_windmill.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv-windmill.png"],
+        ["inv_stone_sword.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_stone_sword.png"],
+        ["inv_g_sword.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_g_sword.png"],
+        ["inv_d_sword.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_d_sword.png"],
+        ["inv_r_sword.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_r_sword.png"],
+        ["inv_katana.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_katana.png"],
+        ["inv_g_katana.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_g_katana.png"],
+        ["inv_d_katana.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_d_katana.png"],
+        ["inv_c_katana.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_c_katana.png"],
+        ["inv_stone_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_stone_axe.png"],
+        ["inv_g_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_g_axe.png"],
+        ["inv_d_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_d_axe.png"],
+        ["inv_r_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_r_axe.png"],
+        ["inv_great_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_great_axe.png"],
+        ["inv_g_great_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_g_great_axe.png"],
+        ["inv_d_great_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_d_great_axe.png"],
+        ["inv_r_great_axe.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_r_great_axe.png"],
+        ["inv_stone_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_stone_spear.png"],
+        ["inv_g_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_g_spear.png"],
+        ["inv_d_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_d_spear.png"],
+        ["inv_r_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_r_spear.png"],
+        ["inv_cut_spear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_cut_spear.png"],
+        ["inv_g_cutspear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_g_cutspear.png"],
+        ["inv_d_cutspear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_d_cutspear.png"],
+        ["inv_r_cutspear.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_r_cutspear.png"],
+        ["inv_stick.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_stick.png"],
+        ["inv_g_stick.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_g_stick.png"],
+        ["inv_d_stick.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_d_stick.png"],
+        ["inv_r_stick.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_r_stick.png"],
+        ["inv_bat.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_bat.png"],
+        ["inv_cookie.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_cookie.png"],
+        ["inv_castle_wall.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_castle_wall.png"],
+        ["inv_trap.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_trap.png"],
+        ["inv_boost.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_boost.png"],
+        ["inv_turret.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv-turret.png"],
+        ["inv_wood_farm.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_wood_farm.png"],
+        ["inv_wood_farm_cherry.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_wood_farm_cherry.png"],
+        ["inv_bush.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_bush.png"],
+        ["inv_stone_farm.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_stone_farm.png"],
+        ["inv_big_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_big_spike.png"],
+        ["inv_hard_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_hard_spike.png"],
+        ["inv_hammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_hammer.png"],
+        ["inv_stone_shield.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_stone_shield.png"],
+        ["inv_bow.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_bow.png"],
+        ["inv_xbow.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_xbow.png"],
+        ["inv_musket.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_musket.png"],
+        ["inv_platform.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_platform.png"],
+        ["inv_bed.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_bed.png"],
+        ["inv_heal_pad.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv-heal-pad.png"],
+        ["inv_s_healing_staff.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv-s-healing-staff.png"],
+        ["inv_g_healing_staff.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv-g-healing-staff.png"],
+        ["inv_d_healing_staff.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv-d-healing-staff.png"],
+        ["inv_r_healing_staff.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv-r-healing-staff.png"],
+        ["inv_s_dagger.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv-s-dagger.png"],
+        ["inv_g_dagger.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv_g-dagger.png"],
+        ["inv_d_dagger.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/inv-d-dagger.png"],
+        ["inv_roof.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/Inv_roof.png"],
+        ["inv_teleporter.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/Inv_teleporter.png"],
+        ["inv_pearl.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/Inv_pearl.png"],
+        ["inv_ice_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Invis%20BG/Inv-icespike.png"],
+        ["inv_g_hammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/inv_g_hammer.png"],
+        ["inv_d_hammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/inv_d_hammer.png"],
+        ["inv_r_hammer.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/inv_r_hammer.png"],
+        ["inv_g_bat.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/inv_g_bat.png"],
+        ["inv_d_bat.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/inv_d_bat.png"],
+        ["inv_r_bat.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/inv_r_bat.png"],
+        // Invis Items
+        ["bed.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/bed.png"],
+        ["bed.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/bed.png"],
+        ["apple.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/apple.png"],
+        //  ["spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/spike.png"],
+        //  ["spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/spike.png"],
+        ["boost.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/boost.png"],
+        ["boost.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/boost.png"],
+        //  ["trap.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/trap.png"],
+        //  ["trap.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/trap.png"],
+        ["big_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/big_spike.png"],
+        ["wall.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/wall.png"],
+        ["wall.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/wall.png"],
+        ["castle_wall.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/castle_wall.png"],
+        ["castle_wall.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/castle_wall.png"],
+        ["cookie.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/cookie.png"],
+        //  ["hard_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/hard_spike.png"],
+        //  ["hard_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/hard_spike.png"],
+        ["lootbox.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/lootbox.png"],
+        ["platform.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/platform.png"],
+        ["platform.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/platform.png"],
+        ["roof.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/roof.png"],
+        ["teleporter.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/teleporter.png"],
+        ["turret_assembled.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/turret_assembled.png"],
+        ["turret_base.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/turret_base.png"],
+        ["turret_top.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/turret_top.png"],
+        ["windmill_assembled.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/windmill_assembled.png"],
+        ["windmill_base.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/windmill_base.png"],
+        ["windmill_top.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/windmill_top.png"],
+        ["castle_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/big_spike.png"],
+        ["chest.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Nature/chest.png"],
+        ["heal_pad.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/heal-pad.png"],
+        ["heal_pad.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/heal-pad.png"],
+        //  ["ice_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/ice_spike.png"],
+        //  ["ice_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Placeables/ice_spike.png"],
+        // Invis Optional
+        ["spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Optional/Invis_Accurate_Spike.png"],
+        ["spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Optional/Invis_Accurate_Spike.png"],
+        ["hard_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Optional/Invis_Accurate_Spike.png"],
+        ["hard_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Optional/Invis_Accurate_Spike.png"],
+        ["trap.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Godtrap.png"],
+        ["trap.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Godtrap.png"],
+        ["cactus.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/inviscactushitbox.png"],
+        ["ice_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/ice_spike_hitbox.png"],
+        ["ice_spike.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/ice_spike_hitbox.png"],
+        // Invis Hats
+        ["hat_1.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_1.png"],
+        ["hat_2.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_2.png"],
+        ["hat_3.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_3.png"],
+        ["hat_4.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_4.png"],
+        ["hat_5.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_5.png"],
+        ["hat_6.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_6.png"],
+        ["hat_7.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_7.png"],
+        ["hat_8.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_8.png"],
+        ["hat_9.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_9.png"],
+        ["hat_11.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/hat_11.png"],
+        ["skid_hat.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/Invis/Hat/skid_hat.png"],
+        ["hat_14.png?v=1923912", "https://file.garden/ZtXp4RfU3xpOoqm9/new/hat_14.png"]
+    ]);
+    // Hat menu custom images
+    const hatImageMap = {
+        1: "berry_farm.png?v=1923912", // bush gear
+        2: "hat_1.png?v=1923912", // bull hat
+        3: "hat_2.png?v=1923912", // jungle hat
+        4: "hat_3.png?v=1923912", // crystal hat
+        5: "hat_4.png?v=1923912", // spike gear
+        6: "hat_5.png?v=1923912", // immunity hat
+        7: "hat_6.png?v=1923912", // boost hat
+        8: "hat_7.png?v=1923912", // apple hat
+        9: "hat_8.png?v=1923912", // scuba gear
+        10: "hat_9.png?v=1923912", // assassin gear
+        11: "hat_11.png?v=1923912", // demo gear
+        12: "hat_14.png?v=1923912" // santa hat
+    };
+
+    function updateHatImagesOnce(observer) {
+        let allReplaced = true;
+
+        for (const [index, url] of Object.entries(hatImageMap)) {
+            const img = document.querySelector(`#hat_menu_content > div:nth-child(${index}) > img`);
+            if (img) {
+                if (!img.dataset.replaced) {
+                    img.src = url;
+                    img.dataset.replaced = "true"; // mark as replaced
+                }
+            } else {
+                allReplaced = false; // missing one, keep watching
+            }
+        }
+
+        // Stop watching once all hats are replaced
+        if (allReplaced) {
+            observer.disconnect();
+        }
+    }
+
+    // Create observer
+    const observer = new MutationObserver(() => updateHatImagesOnce(observer));
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    function redirectIfMatched(url) {
+        // Create an array from Map entries and sort by length of match descending
+        const sortedEntries = Array.from(redirects.entries())
+        .sort((a, b) => b[0].length - a[0].length);
+
+        for (const [match, replacement] of sortedEntries) {
+            if (url.includes(match)) {
+                return replacement;
+            }
+        }
+        return url;
+    }
+
+    // Patch HTMLImageElement.prototype.src
+    function patchImageSrc() {
+        const proto = HTMLImageElement.prototype;
+        const desc = Object.getOwnPropertyDescriptor(proto, 'src');
+        if (!desc || !desc.set) return;
+
+        const originalSetter = desc.set;
+
+        Object.defineProperty(proto, 'src', {
+            configurable: true,
+            enumerable: true,
+            get: desc.get,
+            set: function(value) {
+                const redirected = redirectIfMatched(value);
+                if (redirected !== value) {
+                }
+                return originalSetter.call(this, redirected);
+            }
+        });
+        console.log("[Redirector] Patched img.src");
+    }
+
+    // Patch setAttribute
+    const originalSetAttr = Element.prototype.setAttribute;
+    Element.prototype.setAttribute = function(name, value) {
+        if (this.tagName === 'IMG' && name === 'src') {
+            const redirected = redirectIfMatched(value);
+            if (redirected !== value) {
+            }
+            value = redirected;
+        }
+        return originalSetAttr.call(this, name, value);
+    };
+    console.log("[Redirector] Patched setAttribute for IMG.src");
+
+    // Patch new Image()
+    const OriginalImage = window.Image;
+    window.Image = new Proxy(OriginalImage, {
+        construct(target, args) {
+            const img = new target(...args);
+
+            // Patch setAttribute on the new image
+            const origSetAttr = img.setAttribute;
+            img.setAttribute = function(name, value) {
+                if (name === "src") {
+                    const redirected = redirectIfMatched(value);
+                    if (redirected !== value) {
+                    }
+                    value = redirected;
+                }
+                return origSetAttr.call(this, name, value);
+            };
+
+            // Patch src property setter/getter on the new image
+            Object.defineProperty(img, "src", {
+                set(value) {
+                    const redirected = redirectIfMatched(value);
+                    if (redirected !== value) {
+                    }
+                    return HTMLImageElement.prototype.src.set.call(this, redirected);
+                },
+                get() {
+                    return HTMLImageElement.prototype.src.get.call(this);
+                },
+                configurable: true
+            });
+
+            return img;
+        }
+    });
+    console.log("[Redirector] Patched new Image()");
+
+    patchImageSrc();
+})();
